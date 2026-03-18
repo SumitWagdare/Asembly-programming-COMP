@@ -1,0 +1,77 @@
+Pratical no:3
+
+;Tittle : Write an X86/64ALP  to count number of positive and negative numbers from array 
+Section .data
+Msg1 db “count of positive no “
+Len1 equ $-msg1
+Msg2 db “count of negative no “
+Len2 equ $-msg2
+Array db 10,12,-21,-12,-19,-34,41
+
+%macro Print 2
+    Mov rax,01
+    Mov rdi,01
+    Mov rsi,%1
+    Mov rdx,%2
+    Syscall
+%endmacro
+
+Section .bss
+Count       resb 2
+Pcount      resb 2
+Ncount      resb 2
+Totalcount resb 2
+
+Section .text
+Global _start
+
+_start:
+    Mov byte [count],07
+    Mov byte [Pcount],00
+    Mov byte [ncount],00
+    Mov rsi,array
+
+UP:
+    Mov al,00
+    Add al,[rsi]
+    Js neg
+    Inc byte [Pcount]
+    Jmp Down
+
+Neg:
+    Inc byte [ncount]
+
+Down:
+    Inc rsi,
+    Dec byte [count]
+    Jnz UP
+    
+B1:
+  Print msg1,len1
+  Mov bh,[Pcount]
+  Call Disp
+  Print msg2,len2
+  Mov bh,[ncount]
+  Call Disp
+  Mov rax,60
+  Mov rdi,00
+  Syscall
+
+Disp:
+    Mov byte [count],02
+
+Loop1:
+    Rol bh,04
+    Mov al,bh
+    And al,0FH
+    Cmp al,09
+    Jbe L1
+    Add al,07h
+
+L1:
+    Add al,30h
+    Mov [totalcount],al
+    Print totalcount,02
+    Dec byte [count]
+    Jnz loop1
+    Ret
