@@ -1,0 +1,54 @@
+section .data
+m2 db 10,13,"Enter the string: "
+m2_len equ $-m2
+m3 db 10,13,"Length of the string: "
+m3_len equ $-m3
+section .bss
+srcstr resb 20 ; input string buffer
+count resb 1 ; stores length
+dispbuff resb 2 ; buffer to display length
+%macro disp 2
+mov rax,1
+mov rdi,1 ; stdout
+mov rsi,%1
+mov rdx,%2
+syscall
+%endmacro
+%macro acceptstr 2
+mov rax,0
+mov rdi,0 ; stdin
+mov rsi,%1
+mov rdx,%2
+syscall
+%endmacro
+section .text
+global _start
+_start:
+disp m2, m2_len
+acceptstr srcstr, 20
+dec al ; remove newline from count
+mov [count], al ; save string length
+disp m3, m3_len
+mov bl, [count] ; load length
+call display
+mov rax,60 ; exit syscall
+xor rdi,rdi
+syscall
+display:
+mov cl,2 ; two hex digits
+lea rdi, [dispbuff]
+d1:
+rol bl,4 ; get next nibble
+mov al, bl
+and al, 0Fh
+cmp al, 9
+jbe d2
+add al, 7 ; A–F adjustment
+d2:
+add al, 30h ; ASCII conversion
+mov [rdi], al
+inc rdi
+dec cl
+jnz d1
+disp dispbuff, 2
+ret
