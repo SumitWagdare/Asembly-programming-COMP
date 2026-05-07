@@ -81,8 +81,8 @@ inc rsi ; next character
 loop next_digit
 ret
 ; PRINT 16-BIT HEX NUMBER
-Hitendra Hemraj Yeole
-CO2197
+wagdare sumit hansraj
+CO2160
 print:
 mov ecx, 4 ; 4 hex digits
 mov rdi, dispbuff ; output buffer
