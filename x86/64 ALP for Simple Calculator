@@ -1,0 +1,117 @@
+; Roll No: CO2160
+; x86/64 ALP for Simple Calculator (+, -, *, /)
+section .data
+msg1 db "Enter first number: ", 0
+len1 equ $-msg1
+msg2 db "Enter second number: ", 0
+len2 equ $-msg2
+msg3 db "Enter operation (+,-,*,/): ", 0
+len3 equ $-msg3
+msg4 db 10, "Result: ", 0
+len4 equ $-msg4
+err db 10, "Invalid operation!", 0
+errlen equ $-err
+newline db 10
+section .bss
+num1 resb 5
+num2 resb 5
+op resb 2
+result resb 10
+%macro scall 4
+mov rax, %1
+mov rdi, %2
+mov rsi, %3
+mov rdx, %4
+syscall
+%endmacro
+section .text
+global _start
+_start:
+; Input first number
+scall 1,1,msg1,len1
+scall 0,0,num1,5
+call ascii_to_int
+mov r8, rax
+; Input second number
+scall 1,1,msg2,len2
+scall 0,0,num2,5
+call ascii_to_int
+mov r9, rax
+; Input operator
+scall 1,1,msg3,len3
+scall 0,0,op,2
+mov al, [op]
+cmp al, '+'
+je addition
+cmp al, '-
+'
+je subtraction
+cmp al, '*'
+je multiplication
+cmp al, '/'
+je division
+jmp invalid
+addition:
+mov rax, r8
+add rax, r9
+jmp convert
+subtraction:
+mov rax, r8
+sub rax, r9
+jmp convert
+multiplication:
+mov rax, r8
+imul r9
+jmp convert
+division:
+mov rax, r8
+mov rdx, 0
+cmp r9, 0
+je invalid
+div r9
+jmp convert
+invalid:
+scall 1,1,err,errlen
+jmp exit
+; Convert result to ASCII
+convert:
+mov rbx, 10
+mov rcx, 0
+mov rdi, result
+loop1:
+mov rdx, 0
+div rbx
+push rdx
+inc rcx
+cmp rax, 0
+jne loop1
+loop2:
+pop rdx
+add dl, 30h
+mov [rdi], dl
+inc rdi
+loop loop2
+; Display result
+scall 1,1,msg4,len4
+scall 1,1,result,10
+scall 1,1,newline,1
+exit:
+mov rax, 60
+xor rdi, rdi
+syscall
+; ASCII to integer conversion
+ascii_to_int:
+mov rsi, num1
+mov rax, 0
+mov rcx, 4
+next_digit:
+mov bl, [rsi]
+cmp bl, 10
+je done
+sub bl, 30h
+imul rax, 10
+add rax, rbx
+inc rsi
+loop next_digit
+done:
+ret
